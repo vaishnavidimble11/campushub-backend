@@ -1,0 +1,211 @@
+{
+  "info": {
+    "name": "CampusHub API - Full Stack Capstone Collection",
+    "description": "Complete Postman collection covering all 15 REST endpoints, authentication, and role-based access for CampusHub.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "token", "value": "" },
+    { "key": "courseId", "value": "" },
+    { "key": "enrollmentId", "value": "" },
+    { "key": "userId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Student",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alex Rivers\",\n  \"email\": \"alex@student.edu\",\n  \"password\": \"Secret@123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login (Admin / Instructor / Student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@campushub.edu\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Get Current User Profile (GET /me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Courses",
+      "item": [
+        {
+          "name": "Get All Courses (Public / Filtered by Role)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Get Course By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/courses/{{courseId}}"
+          }
+        },
+        {
+          "name": "Create Course (Admin or Instructor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Distributed Systems with Spring Cloud\",\n  \"description\": \"Comprehensive microservices engineering course.\",\n  \"category\": \"Cloud Computing\",\n  \"status\": \"PUBLISHED\",\n  \"lessons\": [\n    {\n      \"title\": \"Service Discovery with Eureka\",\n      \"description\": \"Building resilient services\",\n      \"videoUrl\": \"https://www.youtube.com/embed/dQw4w9WgXcQ\",\n      \"durationMinutes\": 30\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Update Course (Admin or Owner)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Course Title\",\n  \"description\": \"Updated syllabus\",\n  \"category\": \"Computer Science\",\n  \"status\": \"PUBLISHED\"\n}"
+            },
+            "url": "{{baseUrl}}/courses/{{courseId}}"
+          }
+        },
+        {
+          "name": "Delete Course (Admin or Owner)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/courses/{{courseId}}"
+          }
+        },
+        {
+          "name": "Enroll in Course (Student)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/courses/{{courseId}}/enroll"
+          }
+        },
+        {
+          "name": "Get Enrolled Students (Admin or Course Owner)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/courses/{{courseId}}/students"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Enrollments",
+      "item": [
+        {
+          "name": "Get My Enrollments (Student)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/enrollments/me"
+          }
+        },
+        {
+          "name": "Update Progress (Student)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progress\": 75\n}"
+            },
+            "url": "{{baseUrl}}/enrollments/{{enrollmentId}}/progress"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Admin Operations",
+      "item": [
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "Update User Role or Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"INSTRUCTOR\",\n  \"active\": true\n}"
+            },
+            "url": "{{baseUrl}}/users/{{userId}}/role"
+          }
+        },
+        {
+          "name": "Get Platform Statistics (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/admin/stats"
+          }
+        }
+      ]
+    }
+  ]
+}
